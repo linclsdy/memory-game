@@ -7,19 +7,20 @@ const cards = ["fa fa-diamond", "fa fa-paper-plane-o", "fa fa-anchor", "fa fa-bo
 
 const deck = document.querySelector('.deck');
 
+let clockOff = true; // toggle clock counting, turn it to false after first click
 let toggled = [];
-let moves = 0;
-let stars = 3; 
-let removeStar = 0;
-let clockOff = true;
-let time = 0;
-let matches = 0;
+let moves = 0; // moves counter
+let stars = 3; // stars counter
+let time = 0; // time counter
+let displayminutes = '00';
+let displayseconds = '00';
+let clockId; // refer to the clock ID
+let matches = 0; // how many matches to decide finish or not
 
 //shuffle the cards on the deck
 function shuffleDeck() {
-  //const shuffleCards = Array.from(document.querySelectorAll('.deck li'));
-  //console.log('shuffle cards', shuffleCards);
   const shuffledCards = shuffle(cards);
+  deck.innerHTML = ''; // remove all the previous child before appending new child
   for (shuffledCard of shuffledCards) {
     var newShuffledCard = document.createElement('li');
     newShuffledCard.className = 'card';
@@ -57,9 +58,10 @@ deck.addEventListener('click', event => {
           }
       }
   
-//end game after all cards are matched. It pops up an alert. 
-  if(checkFinish()) {
-    if(confirm("Congratulation!! You have used " + moves + " moves in " + time + " seconds with " + stars + " out of 3 stars rating. Do you want to play again?")) {
+//end game after all cards are matched. Timer is stopped. It pops up an alert to ask whether restart the game or not.
+  if(checkFinish()) { 
+    stopClock();
+    if(confirm("Congratulation!! You have used " + moves + " moves in " + displayminutes + " minutes and " + displayseconds + " seconds with " + stars + " out of 3 stars rating. Do you want to play again?")) {
      restart();
       };
   }
@@ -82,11 +84,28 @@ function shuffle(array) {
     return array;
 }
 
-//restart the game
+
 function restart() {
-    location.reload();
-    console.log(checkStar);
-    startClock();
+  if(confirm("Are you sure to restart?")) {
+    matches = 0; // reset matches counter
+    shuffleDeck();
+    stopClock();
+    clockOff = true;
+
+    moves = 0; // reset moves counter
+    const movesText = document.querySelector('.moves');
+    movesText.innerText = moves;   
+    stars = 3; // reset stars counter
+    const starList = document.querySelectorAll('.stars li');
+
+    for (star of starList) {
+      star.style.display = 'inline';
+    }
+
+    time = 0; //  reset time counter
+    const clock = document.querySelector('.clock');
+    clock.innerText = '00:00';
+  };
 
 }
 
@@ -124,7 +143,7 @@ function checkMatch() {
 
 //check whether 8 pairs of cards are matched
 function checkFinish() {
-  console.log(matches);
+  //console.log(matches);
   if (matches === 8) {
     return true; 
   } else {
@@ -162,8 +181,7 @@ function hideStar() {
 
 //start the timer after first click    
 function startClock() {
- // time = 0;
-  let clockId = setInterval(() => {
+  clockId = setInterval(() => {
     time++;
     displayTime()
   }, 1000);
@@ -174,8 +192,6 @@ function displayTime() {
   const clock = document.querySelector('.clock');
   const minutes = Math.floor(time / 60);
   const seconds = time % 60;
-  var displayseconds = "0";
-  var displayminutes = "0";
   if (seconds < 10) {
     displayseconds = "0" + seconds;
   }
@@ -191,6 +207,10 @@ function displayTime() {
   clock.innerHTML = displayminutes + ":" + displayseconds;
 }   
 
+//stop the timer
+function stopClock() {
+  clearInterval(clockId);
+}
 
 
 /*
